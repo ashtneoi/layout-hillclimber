@@ -25,42 +25,73 @@ def get_ngrams(maxlen):
     return n
 
 
-def ncsfu_score(ngrams, char_to_finger):
+def ncsfu_score(ngrams, char_to_key):
     score = 0
     for _i, igrams in enumerate(ngrams[2:], 2):
         # print(f"Scoring {i}-grams")
         for igram, count in igrams.items():
             fingers = []
+            rows = []
             for c in igram:
-                finger = char_to_finger.get(c)
-                if finger is None:
+                key = char_to_key.get(c)
+                if key is None:
                     raise Exception(f"can't type {igram}")
+                row, finger = key
                 if finger in fingers:
                     break
                 fingers.append(finger)
+                rows.append(row)
             else:
+                if 0 in rows or (1 in rows and 3 in rows):
+                    continue
                 score += count
     return score
 
 
+def strength_score(ngrams, char_to_strength):
+    score = 0
+    for _i, igrams in enumerate(ngrams[2:], 2):
+        # print(f"Scoring {i}-grams")
+        for igram, count in igrams.items():
+            for c in igram:
+                score += count * char_to_strength[c]
+    return score
+
+
 def layout_score(ngrams, layout):
-    char_to_finger = {}
-    for row in layout:
-        for i, col in enumerate(row):
-            char_to_finger[col] = i
-    return ncsfu_score(ngrams, char_to_finger)
+    char_to_key = {}
+    for r, row in enumerate(layout):
+        for c, char in enumerate(row):
+            char_to_key[char] = (r, c)
+    return ncsfu_score(ngrams, char_to_key)
+
+
+def layout_score2(ngrams, layout):
+    char_to_key = {}
+    for r, row in enumerate(layout):
+        for c, char in enumerate(row):
+            char_to_key[char] = (r, c)
+
+    strength = [
+        (0, 1, 2, 1, 1, 2, 1, 0),
+        (0, 3, 4, 2, 2, 4, 3, 0),
+        (2, 4, 5, 4, 4, 5, 4, 2),
+        (1, 2, 3, 4, 4, 3, 2, 1),
+    ]
+    char_to_strength = {}
+    for layout_row, strength_row in zip(layout, strength):
+        for char, strength_num in zip(layout_row, strength_row):
+            char_to_strength[char] = int(strength_num)
+    return strength_score(ngrams, char_to_strength) \
+        + 10 * ncsfu_score(ngrams, char_to_key)
 
 
 def random_swap(layout):
-    force_row_0 = randrange(len(layout))
     keys = []
     chars = []
     for _ in range(randrange(2, 8)):
         while True:
-            if force_row_0:
-                row = 0
-            else:
-                row = randrange(1, len(layout))
+            row = randrange(0, len(layout))
             col = randrange(len(layout[0]))
             if (row, col) not in keys:
                 break
@@ -78,10 +109,11 @@ def random_swap(layout):
 def search(ngrams, layout, best_best_score, best_best_layout):
     failed = 0
     best_score = 0
-    while failed < 800:
+    while failed < 400:
         new_layout = [""]
-        new_layout = random_swap(layout)
-        score = layout_score(ngrams, new_layout)
+        while new_layout[0].count("-") != 5:
+            new_layout = random_swap(layout)
+        score = layout_score2(ngrams, new_layout)
         if score <= best_score:
             failed += 1
         else:
@@ -100,16 +132,6 @@ def search(ngrams, layout, best_best_score, best_best_layout):
 
 def main():
     ngrams = get_ngrams(3)
-
-    print(layout_score(ngrams, [
-        "---TY---",
-        "---GH---",
-        "---BN---",
-        "QWERUIOP",
-        "ASDFJKL-",
-        "ZXCVM---",
-    ]))
-    print()
 
     not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY"
     assert len(not_qxz) == 26 - 3
@@ -133,7 +155,7 @@ def main():
             print("\n".join(best_best_layout[0]))
             print(best_best_score[0])
             layout = best_best_layout[0]
-            for _ in range(2):
+            for _ in range(4):
                 search(ngrams, layout, best_best_score, best_best_layout)
                 print()
                 print("<<<")

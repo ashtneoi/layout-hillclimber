@@ -46,16 +46,8 @@ def ncsfu_score(ngrams, char_to_finger):
 def layout_score(ngrams, layout):
     char_to_finger = {}
     for row in layout:
-        char_to_finger[row[0]] = 0
-        char_to_finger[row[1]] = 1
-        char_to_finger[row[2]] = 2
-        char_to_finger[row[3]] = 3
-        char_to_finger[row[4]] = 3
-        char_to_finger[row[5]] = 4
-        char_to_finger[row[6]] = 4
-        char_to_finger[row[7]] = 5
-        char_to_finger[row[8]] = 6
-        char_to_finger[row[9]] = 7
+        for i, col in enumerate(row):
+            char_to_finger[col] = i
     return ncsfu_score(ngrams, char_to_finger)
 
 
@@ -64,8 +56,8 @@ def random_swap(layout):
     chars = []
     for _ in range(randrange(2, 6)):
         for _ in range(100):
-            row = randrange(3)
-            col = randrange(10)
+            row = randrange(len(layout))
+            col = randrange(len(layout[0]))
             if (row, col) not in keys:
                 break
         else:
@@ -85,36 +77,57 @@ def main():
     ngrams = get_ngrams(3)
 
     print(layout_score(ngrams, [
-        "QWERTYUIOP",
-        "ASDFGHJKL-",
-        "ZXCVBNM---",
+        "---TY---",
+        "---GH---",
+        "---BN---",
+        "QWERUIOP",
+        "ASDFJKL-",
+        "ZXCVM---",
     ]))
     print()
 
-    layout = [
-        "QDRWBJFUP-",
-        "ASHTGYNEOI",
-        "ZXMCVKL---",
+    starting_layout = [
+        "--QXZ---",
+        "YDRWFUPV",
+        "ASHTNEOI",
+        "KGMCLB-J",
     ]
-    max_score = layout_score(ngrams, layout)
-    print("\n".join(layout))
-    print(max_score)
 
-    failed = 0
-    while True:
-        new_layout = random_swap(layout)
-        score = layout_score(ngrams, new_layout)
-        if score <= max_score:
-            failed += 1
-        else:
-            layout = new_layout
-            max_score = score
-            print()
-            print(f"failed: {failed}")
-            print()
-            print("\n".join(layout))
-            print(score)
+    best_best_score = 0
+    best_best_layout = starting_layout
+
+    try:
+        while True:
             failed = 0
+            layout = starting_layout
+            best_score = 0
+            while failed < 4000:
+                new_layout = [""]
+                while new_layout[0].count("-") != 5:
+                    new_layout = random_swap(layout)
+                score = layout_score(ngrams, new_layout)
+                if score <= best_score:
+                    failed += 1
+                else:
+                    layout = new_layout
+                    best_score = score
+                    if score > best_best_score:
+                        best_best_score = score
+                        best_best_layout = layout
+                    print()
+                    print(f"failed: {failed}")
+                    print()
+                    print("\n".join(layout))
+                    print(f"{score} / {best_best_score}")
+                    failed = 0
+            print()
+            print("Too many failed; restarting")
+    except KeyboardInterrupt:
+        print()
+        print()
+        print("Best best layout:")
+        print("\n".join(best_best_layout))
+        print(best_best_score)
 
 
 if __name__ == "__main__":

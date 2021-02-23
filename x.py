@@ -52,16 +52,18 @@ def layout_score(ngrams, layout):
 
 
 def random_swap(layout):
+    force_row_0 = randrange(len(layout))
     keys = []
     chars = []
-    for _ in range(randrange(2, 6)):
-        for _ in range(100):
-            row = randrange(len(layout))
+    for _ in range(randrange(2, 8)):
+        while True:
+            if force_row_0:
+                row = 0
+            else:
+                row = randrange(1, len(layout))
             col = randrange(len(layout[0]))
             if (row, col) not in keys:
                 break
-        else:
-            raise Exception("what?")
         keys.append((row, col))
         chars.append(layout[row][col])
     assert len(keys) == len(chars)
@@ -76,10 +78,9 @@ def random_swap(layout):
 def search(ngrams, layout, best_best_score, best_best_layout):
     failed = 0
     best_score = 0
-    while failed < 400:
+    while failed < 800:
         new_layout = [""]
-        while new_layout[0].count("-") != 5:
-            new_layout = random_swap(layout)
+        new_layout = random_swap(layout)
         score = layout_score(ngrams, new_layout)
         if score <= best_score:
             failed += 1
@@ -110,11 +111,17 @@ def main():
     ]))
     print()
 
+    not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY"
+    assert len(not_qxz) == 26 - 3
+    not_qxz_split = list(not_qxz)
+    shuffle(not_qxz_split)
+    not_qxz = "".join(not_qxz_split)
+
     starting_layout = [
         "--QXZ---",
-        "YDRWFUPV",
-        "ASHTNEOI",
-        "KGMCLB-J",
+        not_qxz[0:8],
+        not_qxz[8:16],
+        not_qxz[16:23] + "-",
     ]
 
     best_best_score = [0]
@@ -126,7 +133,7 @@ def main():
             print("\n".join(best_best_layout[0]))
             print(best_best_score[0])
             layout = best_best_layout[0]
-            for _ in range(3):
+            for _ in range(2):
                 search(ngrams, layout, best_best_score, best_best_layout)
                 print()
                 print("<<<")

@@ -73,6 +73,30 @@ def random_swap(layout):
     return new_layout
 
 
+def search(ngrams, layout, best_best_score, best_best_layout):
+    failed = 0
+    best_score = 0
+    while failed < 400:
+        new_layout = [""]
+        while new_layout[0].count("-") != 5:
+            new_layout = random_swap(layout)
+        score = layout_score(ngrams, new_layout)
+        if score <= best_score:
+            failed += 1
+        else:
+            layout = new_layout
+            best_score = score
+            if score > best_best_score[0]:
+                best_best_layout[0] = layout
+                best_best_score[0] = score
+            print()
+            print(f"failed: {failed}")
+            print()
+            print("\n".join(layout))
+            print(f"{score} / {best_best_score[0]}")
+            failed = 0
+
+
 def main():
     ngrams = get_ngrams(3)
 
@@ -93,41 +117,27 @@ def main():
         "KGMCLB-J",
     ]
 
-    best_best_score = 0
-    best_best_layout = starting_layout
+    best_best_score = [0]
+    best_best_layout = [starting_layout]
 
     try:
         while True:
-            failed = 0
-            layout = starting_layout
-            best_score = 0
-            while failed < 4000:
-                new_layout = [""]
-                while new_layout[0].count("-") != 5:
-                    new_layout = random_swap(layout)
-                score = layout_score(ngrams, new_layout)
-                if score <= best_score:
-                    failed += 1
-                else:
-                    layout = new_layout
-                    best_score = score
-                    if score > best_best_score:
-                        best_best_score = score
-                        best_best_layout = layout
-                    print()
-                    print(f"failed: {failed}")
-                    print()
-                    print("\n".join(layout))
-                    print(f"{score} / {best_best_score}")
-                    failed = 0
             print()
-            print("Too many failed; restarting")
+            print("\n".join(best_best_layout[0]))
+            print(best_best_score[0])
+            layout = best_best_layout[0]
+            for _ in range(3):
+                search(ngrams, layout, best_best_score, best_best_layout)
+                print()
+                print("<<<")
+            print()
+            print("<<<<<<<<<<<<<<<<")
     except KeyboardInterrupt:
         print()
         print()
         print("Best best layout:")
-        print("\n".join(best_best_layout))
-        print(best_best_score)
+        print("\n".join(best_best_layout[0]))
+        print(best_best_score[0])
 
 
 if __name__ == "__main__":

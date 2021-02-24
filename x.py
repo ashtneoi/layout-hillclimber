@@ -27,7 +27,7 @@ def get_ngrams(maxlen):
 
 def ncsfu_score(ngrams, char_to_key):
     score = 0
-    for _i, igrams in enumerate(ngrams[2:], 2):
+    for i, igrams in enumerate(ngrams[2:], 2):
         # print(f"Scoring {i}-grams")
         for igram, count in igrams.items():
             fingers = []
@@ -44,7 +44,7 @@ def ncsfu_score(ngrams, char_to_key):
             else:
                 if 0 in rows or (1 in rows and 3 in rows):
                     continue
-                score += count
+                score += count * i**2
     return score
 
 
@@ -81,7 +81,7 @@ def layout_score2(ngrams, layout):
         for char, strength_num in zip(layout_row, strength_row):
             char_to_strength[char] = int(strength_num)
     return strength_score(ngrams, char_to_strength) \
-        + 10 * ncsfu_score(ngrams, char_to_key)
+        + 5 * ncsfu_score(ngrams, char_to_key)
 
 
 def random_swap(layout):
@@ -129,7 +129,7 @@ def search(ngrams, layout, best_best_score, best_best_layout):
 
 
 def main():
-    ngrams = get_ngrams(3)
+    ngrams = get_ngrams(4)
 
     not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY"
     assert len(not_qxz) == 26 - 3

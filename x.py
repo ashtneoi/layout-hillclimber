@@ -37,14 +37,15 @@ def ncsfu_score(ngrams, char_to_key):
                 if key is None:
                     raise Exception(f"can't type {igram}")
                 row, finger = key
+                if row == 0:
+                    break
                 if finger in fingers:
                     break
                 fingers.append(finger)
                 rows.append(row)
             else:
-                if 0 in rows or (1 in rows and 3 in rows):
-                    continue
-                score += count * i**2
+                if not(1 in rows and 3 in rows):
+                    score += count * i**2
     return score
 
 
@@ -53,6 +54,45 @@ def strength_score(ngrams, char_to_strength):
     for igram, count in ngrams[1].items():
         for c in igram:
             score += count * char_to_strength[c]
+    return score
+
+
+def inward_roll_score(ngrams, char_to_key):
+    score = 0
+    for i, igrams in enumerate(ngrams[2:], 2):
+        for igram, count in igrams.items():
+            rows = []
+            prev_col = -1
+            for c in igram:
+                key = char_to_key.get(c)
+                if key is None:
+                    raise Exception(f"can't type {igram}")
+                row, col = key
+                if row == 0:
+                    break
+                if (prev_col <= 3 and col <= prev_col) \
+                        or (prev_col >= 4 and col >= prev_col):
+                    break
+                rows.append(row)
+            else:
+                if not(1 in rows and 3 in rows):
+                    score += count * i
+    return score
+
+
+def hand_alternation_score(ngrams, char_to_key):
+    score = 0
+    for i, igrams in enumerate(ngrams[4:], 4):
+        for igram, count in igrams.items():
+            cols = []
+            for c in igram:
+                key = char_to_key.get(c)
+                if key is None:
+                    raise Exception(f"can't type {igram}")
+                _, col = key
+                cols.append(col)
+            if not (all(c <= 3 for c in cols) or all(c >= 4 for c in cols)):
+                score += count
     return score
 
 
@@ -71,17 +111,18 @@ def layout_score2(ngrams, layout):
             char_to_key[char] = (r, c)
 
     strength = [
-        (0, 1, 2, 1, 1, 2, 1, 0),
-        (0, 3, 4, 2, 2, 4, 3, 0),
-        (2, 4, 5, 4, 4, 5, 4, 2),
-        (1, 2, 3, 4, 4, 3, 2, 1),
+        (0, 1, 2, 2, 2, 2, 1, 0),
+        (2, 5, 8, 6, 6, 8, 5, 2),
+        (4, 6, 8, 8, 8, 8, 6, 4),
+        (2, 4, 4, 7, 7, 4, 4, 2),
     ]
     char_to_strength = {}
     for layout_row, strength_row in zip(layout, strength):
         for char, strength_num in zip(layout_row, strength_row):
             char_to_strength[char] = int(strength_num)
-    return strength_score(ngrams, char_to_strength) \
-        + 5 * ncsfu_score(ngrams, char_to_key)
+    return 10 * inward_roll_score(ngrams, char_to_key) \
+        + strength_score(ngrams, char_to_strength) \
+        + 10 * hand_alternation_score(ngrams, char_to_key)
 
 
 def random_swap(layout):
@@ -89,7 +130,7 @@ def random_swap(layout):
     chars = []
     for _ in range(randrange(2, 8)):
         while True:
-            row = randrange(0, len(layout))
+            row = randrange(len(layout))
             col = randrange(len(layout[0]))
             if (row, col) not in keys:
                 break
@@ -107,7 +148,7 @@ def random_swap(layout):
 def search(ngrams, layout, best_best_score, best_best_layout):
     failed = 0
     best_score = 0
-    while failed < 400:
+    while failed < 100:
         new_layout = [""]
         while new_layout[0].count("-") != 5:
             new_layout = random_swap(layout)

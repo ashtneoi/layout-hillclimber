@@ -50,11 +50,9 @@ def ncsfu_score(ngrams, char_to_key):
 
 def strength_score(ngrams, char_to_strength):
     score = 0
-    for _i, igrams in enumerate(ngrams[2:], 2):
-        # print(f"Scoring {i}-grams")
-        for igram, count in igrams.items():
-            for c in igram:
-                score += count * char_to_strength[c]
+    for igram, count in ngrams[1].items():
+        for c in igram:
+            score += count * char_to_strength[c]
     return score
 
 

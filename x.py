@@ -149,7 +149,7 @@ def search(ngrams, layout, best_best_score, best_best_layout):
     best_score = 0
     while failed < 100:
         new_layout = [""]
-        while new_layout[0].count("-") != 5:
+        while new_layout[0].count("-") != 5 or "'" in new_layout[0]:
             new_layout = random_swap(layout)
         score = layout_score2(ngrams, new_layout)
         if score <= best_score:

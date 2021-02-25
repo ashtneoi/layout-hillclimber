@@ -171,17 +171,21 @@ def search(ngrams, layout, best_best_score, best_best_layout):
 def main():
     ngrams = get_ngrams(3)
 
-    not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY"
-    assert len(not_qxz) == 26 - 3
+    not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY'"
+    assert len(not_qxz) == 26 + 1 - 3
     not_qxz_split = list(not_qxz)
     shuffle(not_qxz_split)
     not_qxz = "".join(not_qxz_split)
+    qxz = "QXZ-----"
+    qxz_split = list(qxz)
+    shuffle(qxz_split)
+    qxz = "".join(qxz_split)
 
     starting_layout = [
-        "--QXZ---",
+        qxz,
         not_qxz[0:8],
         not_qxz[8:16],
-        not_qxz[16:23] + "-",
+        not_qxz[16:24],
     ]
 
     best_best_score = [0]

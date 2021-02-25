@@ -113,16 +113,15 @@ def layout_score2(ngrams, layout):
     strength = [
         (0, 1, 2, 2, 2, 2, 1, 0),
         (2, 5, 8, 6, 6, 8, 5, 2),
-        (4, 6, 8, 8, 8, 8, 6, 4),
-        (2, 4, 4, 7, 7, 4, 4, 2),
+        (4, 7, 8, 8, 8, 8, 7, 4),
+        (2, 2, 4, 7, 7, 4, 2, 2),
     ]
     char_to_strength = {}
     for layout_row, strength_row in zip(layout, strength):
         for char, strength_num in zip(layout_row, strength_row):
             char_to_strength[char] = int(strength_num)
     return 10 * inward_roll_score(ngrams, char_to_key) \
-        + strength_score(ngrams, char_to_strength) \
-        + 10 * hand_alternation_score(ngrams, char_to_key)
+        + strength_score(ngrams, char_to_strength)
 
 
 def random_swap(layout):
@@ -170,7 +169,7 @@ def search(ngrams, layout, best_best_score, best_best_layout):
 
 
 def main():
-    ngrams = get_ngrams(4)
+    ngrams = get_ngrams(3)
 
     not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY"
     assert len(not_qxz) == 26 - 3

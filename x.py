@@ -101,14 +101,6 @@ def layout_score(ngrams, layout):
     for r, row in enumerate(layout):
         for c, char in enumerate(row):
             char_to_key[char] = (r, c)
-    return ncsfu_score(ngrams, char_to_key)
-
-
-def layout_score2(ngrams, layout):
-    char_to_key = {}
-    for r, row in enumerate(layout):
-        for c, char in enumerate(row):
-            char_to_key[char] = (r, c)
 
     strength = [
         (0, 1, 2, 2, 2, 2, 1, 0),
@@ -144,28 +136,56 @@ def random_swap(layout):
     return new_layout
 
 
-def search(ngrams, layout, best_best_score, best_best_layout):
+def search(ngrams, start_layout, max_attempts):
+    attempts = [0] * len(max_attempts)
+    best = [(0, None)] * len(max_attempts)  # (score, layout)
+    best[0] = (layout_score(ngrams, start_layout), start_layout)
+    level = 0
+
+    invalid_layout = ["'-------"] * 4
     failed = 0
-    best_score = 0
-    while failed < 100:
-        new_layout = [""]
-        while new_layout[0].count("-") != 5 or "'" in new_layout[0]:
-            new_layout = random_swap(layout)
-        score = layout_score2(ngrams, new_layout)
-        if score <= best_score:
-            failed += 1
-        else:
-            layout = new_layout
-            best_score = score
-            if score > best_best_score[0]:
-                best_best_layout[0] = layout
-                best_best_score[0] = score
+    while level >= 0:
+        while level < len(max_attempts) - 1:
+            level += 1
+            _, lower_best_layout = best[level - 1]
+            best[level] = 0, lower_best_layout
+
+        layout = invalid_layout
+        while layout[0].count("-") != 5 or "'" in layout[0]:
+            layout = random_swap(best[level][1])
+        score = layout_score(ngrams, layout)
+        if score > best[level][0]:
             print()
-            print(f"failed: {failed}")
+            print(f"failed = {failed}")
+            failed = 0
             print()
             print("\n".join(layout))
-            print(f"{score} / {best_best_score[0]}")
-            failed = 0
+            print(score)
+            best[level] = (score, layout)
+        else:
+            failed += 1
+        # print("\n".join(best[level][1]))
+        attempts[level] += 1
+
+        while attempts[level] >= max_attempts[level]:
+            print()
+            print("\n".join(best[level][1]))
+            print(best[level][0])
+            print()
+            print("<" * (level+1))
+            attempts[level] = 0
+            if level == 0:
+                level = -1
+                break
+            level -= 1
+            attempts[level] += 1
+            lower_best_score, _ = best[level]
+            upper_best_score, upper_best_layout = best[level + 1]
+            if upper_best_score > lower_best_score:
+                best[level] = (upper_best_score, upper_best_layout)
+
+    return best[0]
+
 
 
 def main():
@@ -188,27 +208,10 @@ def main():
         not_qxz[16:24],
     ]
 
-    best_best_score = [0]
-    best_best_layout = [starting_layout]
-
-    try:
-        while True:
-            print()
-            print("\n".join(best_best_layout[0]))
-            print(best_best_score[0])
-            layout = best_best_layout[0]
-            for _ in range(4):
-                search(ngrams, layout, best_best_score, best_best_layout)
-                print()
-                print("<<<")
-            print()
-            print("<<<<<<<<<<<<<<<<")
-    except KeyboardInterrupt:
-        print()
-        print()
-        print("Best best layout:")
-        print("\n".join(best_best_layout[0]))
-        print(best_best_score[0])
+    best = search(ngrams, starting_layout, [4, 30, 60])
+    print()
+    print("\n".join(best[1]))
+    print(best[0])
 
 
 if __name__ == "__main__":

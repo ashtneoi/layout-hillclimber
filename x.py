@@ -201,7 +201,7 @@ def search(ngrams, start_layout, max_attempts):
 
 
 def main():
-    ngrams = get_ngrams(3)
+    ngrams = get_ngrams(4)
 
     not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY'"
     assert len(not_qxz) == 26 + 1 - 3
@@ -220,7 +220,7 @@ def main():
         not_qxz[16:24],
     ]
 
-    max_attempts = [4, 4, 4, 100]
+    max_attempts = [4, 4, 4, 4, 4, 100]
 
     total_attempts, best = search(ngrams, starting_layout, max_attempts)
     print()

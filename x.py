@@ -72,6 +72,8 @@ def inward_roll_score(ngrams, char_to_key):
                     break
                 if (prev_col <= 3 and col <= prev_col) \
                         or (prev_col >= 4 and col >= prev_col):
+                    if col == prev_col:
+                        score -= count * i
                     break
                 rows.append(row)
             else:

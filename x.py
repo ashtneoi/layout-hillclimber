@@ -142,6 +142,7 @@ def random_swap(layout):
 
 
 def search(ngrams, start_layout, max_attempts):
+    total_attempts = 0
     attempts = [0] * len(max_attempts)
     best = [(0, None)] * len(max_attempts)  # (score, layout)
     best[0] = (layout_score(ngrams, start_layout), start_layout)
@@ -173,6 +174,7 @@ def search(ngrams, start_layout, max_attempts):
                 failed += 1
             # print("\n".join(best[level][1]))
             attempts[level] += 1
+            total_attempts += 1
 
             while attempts[level] >= max_attempts[level]:
                 print()
@@ -192,9 +194,9 @@ def search(ngrams, start_layout, max_attempts):
                     best[level] = (upper_best_score, upper_best_layout)
     except KeyboardInterrupt:
         print()
-        return max(best, key=lambda x: x[0])
+        return total_attempts, max(best, key=lambda x: x[0])
 
-    return best[0]
+    return total_attempts, best[0]
 
 
 
@@ -218,13 +220,16 @@ def main():
         not_qxz[16:24],
     ]
 
-    best = search(ngrams, starting_layout, [16, 4, 500])
+    max_attempts = [4, 4, 4, 100]
+
+    total_attempts, best = search(ngrams, starting_layout, max_attempts)
     print()
     print("Best:")
     print()
     print("\n".join(best[1]))
     print(f"{best[0]:_}")
     layout_score(ngrams, best[1], print_details=True)
+    print(f"attempts: {total_attempts:_} / {max_attempts}")
 
 
 if __name__ == "__main__":

@@ -104,9 +104,9 @@ def layout_score(ngrams, layout, print_details=False):
 
     strength = [
         (0, 1, 2, 2, 2, 2, 1, 0),
-        (2, 5, 8, 6, 6, 8, 5, 2),
-        (4, 7, 8, 8, 8, 8, 7, 4),
-        (2, 2, 4, 7, 7, 4, 2, 2),
+        (3, 5, 8, 6, 6, 8, 5, 3),
+        (5, 7, 8, 8, 8, 8, 7, 5),
+        (3, 1, 4, 7, 7, 4, 1, 3),
     ]
     char_to_strength = {}
     for layout_row, strength_row in zip(layout, strength):

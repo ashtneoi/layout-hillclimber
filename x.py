@@ -52,6 +52,7 @@ def inward_roll_score(ngrams, char_to_key):
                         score -= count * i
                     break
                 rows.append(row)
+                prev_col = col
             else:
                 if not(1 in rows and 3 in rows):
                     score += count * i

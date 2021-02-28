@@ -25,30 +25,6 @@ def get_ngrams(maxlen):
     return n
 
 
-def ncsfu_score(ngrams, char_to_key):
-    score = 0
-    for i, igrams in enumerate(ngrams[2:], 2):
-        # print(f"Scoring {i}-grams")
-        for igram, count in igrams.items():
-            fingers = []
-            rows = []
-            for c in igram:
-                key = char_to_key.get(c)
-                if key is None:
-                    raise Exception(f"can't type {igram}")
-                row, finger = key
-                if row == 0:
-                    break
-                if finger in fingers:
-                    break
-                fingers.append(finger)
-                rows.append(row)
-            else:
-                if not(1 in rows and 3 in rows):
-                    score += count * i**2
-    return score
-
-
 def strength_score(ngrams, char_to_strength):
     score = 0
     for igram, count in ngrams[1].items():
@@ -79,22 +55,6 @@ def inward_roll_score(ngrams, char_to_key):
             else:
                 if not(1 in rows and 3 in rows):
                     score += count * i
-    return score
-
-
-def hand_alternation_score(ngrams, char_to_key):
-    score = 0
-    for i, igrams in enumerate(ngrams[4:], 4):
-        for igram, count in igrams.items():
-            cols = []
-            for c in igram:
-                key = char_to_key.get(c)
-                if key is None:
-                    raise Exception(f"can't type {igram}")
-                _, col = key
-                cols.append(col)
-            if not (all(c <= 3 for c in cols) or all(c >= 4 for c in cols)):
-                score += count
     return score
 
 
@@ -201,6 +161,8 @@ def search(ngrams, start_layout, max_attempts):
 
 
 def main():
+    import sys
+
     ngrams = get_ngrams(4)
 
     not_qxz = "ABCDEFGHIJKLMNOPRSTUVWY'"
@@ -220,7 +182,7 @@ def main():
         not_qxz[16:24],
     ]
 
-    max_attempts = [4, 4, 4, 4, 4, 100]
+    max_attempts = list(map(int, sys.argv[1:]))
 
     total_attempts, best = search(ngrams, starting_layout, max_attempts)
     print()

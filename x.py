@@ -144,10 +144,9 @@ def search(ngrams, start_layout, max_attempts):
                 print()
                 print("<" * (level+1))
                 attempts[level] = 0
-                if level == 0:
-                    level = -1
-                    break
                 level -= 1
+                if level == -1:
+                    break
                 attempts[level] += 1
                 lower_best_score, _ = best[level]
                 upper_best_score, upper_best_layout = best[level + 1]

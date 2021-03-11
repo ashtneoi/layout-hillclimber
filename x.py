@@ -79,7 +79,7 @@ def layout_score(ngrams, layout, print_details=False):
     ss = strength_score(ngrams, char_to_strength)
     if print_details:
         print(f"irs = {irs:_}; ss = {ss:_}")
-    return 20 * irs + ss
+    return 15 * irs + ss
 
 
 def random_swap(layout):
